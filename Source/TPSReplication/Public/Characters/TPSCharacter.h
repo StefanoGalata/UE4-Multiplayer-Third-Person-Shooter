@@ -18,6 +18,13 @@ public:
 	// Sets default values for this character's properties
 	ATPSCharacter();
 
+
+	FVector GetPawnViewLocation() const override;
+
+	virtual void Tick(float DeltaTime) override;
+
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -35,11 +42,6 @@ protected:
 	void MoveForward(float Amount);
 	void MoveRight(float Amount);
 
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 };

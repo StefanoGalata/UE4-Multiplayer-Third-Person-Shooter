@@ -24,6 +24,16 @@ ATPSCharacter::ATPSCharacter()
 
 }
 
+FVector ATPSCharacter::GetPawnViewLocation() const
+{
+	if (Camera)
+	{
+		return Camera->GetComponentLocation();
+	}
+
+	return Super::GetPawnViewLocation();
+}
+
 // Called when the game starts or when spawned
 void ATPSCharacter::BeginPlay()
 {
