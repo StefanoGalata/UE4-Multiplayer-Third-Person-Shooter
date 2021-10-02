@@ -22,6 +22,9 @@ ATPSCharacter::ATPSCharacter()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
 	Camera->SetupAttachment(SpringArm);
 
+	ZoomedFOV = 65.f;
+	DefaultFOV = 90.f;
+
 }
 
 FVector ATPSCharacter::GetPawnViewLocation() const
@@ -32,29 +35,6 @@ FVector ATPSCharacter::GetPawnViewLocation() const
 	}
 
 	return Super::GetPawnViewLocation();
-}
-
-// Called when the game starts or when spawned
-void ATPSCharacter::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-void ATPSCharacter::BeginCrouch()
-{
-	Crouch();
-}
-
-void ATPSCharacter::EndCrouch()
-{
-	UnCrouch();
-}
-
-// Called every frame
-void ATPSCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -72,6 +52,38 @@ void ATPSCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 	PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ATPSCharacter::EndCrouch);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
+
+	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ATPSCharacter::BeginZoom);
+	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &ATPSCharacter::EndZoom);
+}
+
+// Called when the game starts or when spawned
+void ATPSCharacter::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	DefaultFOV = Camera->FieldOfView;
+}
+
+void ATPSCharacter::BeginCrouch()
+{
+	Crouch();
+}
+
+void ATPSCharacter::EndCrouch()
+{
+	UnCrouch();
+}
+
+// Called every frame
+void ATPSCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	float TargetFOV = bWantsToZoom ? ZoomedFOV : DefaultFOV;
+	
+	Camera->SetFieldOfView(FMath::FInterpTo(Camera->FieldOfView, TargetFOV, DeltaTime, ZoomInterpSpeed));
+	
 }
 
 void ATPSCharacter::MoveForward(float Amount)
@@ -82,6 +94,16 @@ void ATPSCharacter::MoveForward(float Amount)
 void ATPSCharacter::MoveRight(float Amount)
 {
 	AddMovementInput(GetActorRightVector() * Amount);
+}
+
+void ATPSCharacter::BeginZoom()
+{
+	bWantsToZoom = true;
+}
+
+void ATPSCharacter::EndZoom()
+{
+	bWantsToZoom = false;
 }
 
 

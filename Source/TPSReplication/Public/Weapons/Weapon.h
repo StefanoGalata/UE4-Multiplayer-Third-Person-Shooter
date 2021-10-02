@@ -16,7 +16,7 @@ public:
 	AWeapon();
 
 	UFUNCTION(BlueprintCallable, Category = "Weapon")
-	void Fire();
+	virtual void Fire();
 
 protected:
 	// Called when the game starts or when spawned
