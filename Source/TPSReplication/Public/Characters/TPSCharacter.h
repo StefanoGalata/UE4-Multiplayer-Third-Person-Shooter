@@ -8,6 +8,7 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class AWeapon;
 
 UCLASS()
 class TPSREPLICATION_API ATPSCharacter : public ACharacter
@@ -37,13 +38,21 @@ protected:
 	float ZoomedFOV;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Player", meta = (ClampMin = 0.1, ClampMax = 100))
-	float ZoomInterpSpeed = 20.f;																			 
+	float ZoomInterpSpeed = 20.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Player")
+	TSubclassOf<AWeapon> StarterWeaponClass;
+
+	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
+	FName WeaponAttachSocketName;
 
 	void BeginCrouch();
 	void EndCrouch();
 
 	void BeginZoom();
 	void EndZoom();
+
+	void Fire();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -52,6 +61,9 @@ protected:
 	void MoveRight(float Amount);
 
 	bool bWantsToZoom = false;
+
+	UPROPERTY()
+	AWeapon* CurrentWeapon;
 
 	float DefaultFOV;
 

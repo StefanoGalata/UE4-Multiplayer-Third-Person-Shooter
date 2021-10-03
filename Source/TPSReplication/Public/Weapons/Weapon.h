@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Weapon.generated.h"
 
+class UCameraShakeBase;
+
 UCLASS()
 class TPSREPLICATION_API AWeapon : public AActor
 {
@@ -19,8 +21,6 @@ public:
 	virtual void Fire();
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USkeletalMeshComponent* Mesh;
@@ -43,10 +43,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	UParticleSystem* TracerEffect;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+	TSubclassOf<UCameraShakeBase> FireCameraShake;
 
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
+private:
+	void PlayFireEffects(FVector TraceEnd);
 };
