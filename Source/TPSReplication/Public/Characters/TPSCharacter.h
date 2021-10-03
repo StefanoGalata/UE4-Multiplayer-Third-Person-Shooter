@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class AWeapon;
+class UHealthComponent;
 
 UCLASS()
 class TPSREPLICATION_API ATPSCharacter : public ACharacter
@@ -34,6 +35,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	USpringArmComponent* SpringArm;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UHealthComponent* HealthComponent;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Player")
 	float ZoomedFOV;
 
@@ -45,6 +49,12 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Player")
 	FName WeaponAttachSocketName;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Player")
+	bool bDied = false;
+
+	UFUNCTION()
+	void OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	void BeginCrouch();
 	void EndCrouch();

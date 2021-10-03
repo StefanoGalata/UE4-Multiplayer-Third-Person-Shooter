@@ -4,6 +4,7 @@
 #include "Characters/TPSCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/HealthComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "TPSReplication/TPSReplication.h"
@@ -28,6 +29,8 @@ ATPSCharacter::ATPSCharacter()
 	Camera->SetupAttachment(SpringArm);
 	ZoomedFOV = 65.f;
 	DefaultFOV = 90.f;
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
 
 	WeaponAttachSocketName = "WeaponSocket";
 }
@@ -81,6 +84,22 @@ void ATPSCharacter::BeginPlay()
 	{
 		CurrentWeapon->SetOwner(this);
 		CurrentWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, WeaponAttachSocketName);
+	}
+
+	HealthComponent->OnHealthChanged.AddDynamic(this, &ATPSCharacter::OnHealthChanged);
+}
+
+void ATPSCharacter::OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
+{
+	if(Health <= 0.f && !bDied)
+	{
+		bDied = true;
+		GetMovementComponent()->StopMovementImmediately();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+		DetachFromControllerPendingDestroy();
+
+		SetLifeSpan(10.f);
 	}
 }
 
