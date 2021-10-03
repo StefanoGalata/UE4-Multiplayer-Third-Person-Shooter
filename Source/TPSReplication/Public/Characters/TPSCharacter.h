@@ -52,7 +52,8 @@ protected:
 	void BeginZoom();
 	void EndZoom();
 
-	void Fire();
+	void StartFire();
+	void StopFire();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
