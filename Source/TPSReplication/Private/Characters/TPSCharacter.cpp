@@ -3,8 +3,10 @@
 
 #include "Characters/TPSCharacter.h"
 #include "Camera/CameraComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/PawnMovementComponent.h"
+#include "TPSReplication/TPSReplication.h"
 #include "Weapons/Weapon.h"
 
 // Sets default values
@@ -20,9 +22,10 @@ ATPSCharacter::ATPSCharacter()
 
 	GetMovementComponent()->GetNavAgentPropertiesRef().bCanCrouch = true;
 
+	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECollisionResponse::ECR_Ignore);
+
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera Component"));
 	Camera->SetupAttachment(SpringArm);
-
 	ZoomedFOV = 65.f;
 	DefaultFOV = 90.f;
 
