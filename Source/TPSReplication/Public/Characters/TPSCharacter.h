@@ -54,7 +54,7 @@ protected:
 	bool bDied = false;
 
 	UFUNCTION()
-	void OnHealthChanged(UHealthComponent* HealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+	void OnHealthChanged(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
 
 	void BeginCrouch();
 	void EndCrouch();
