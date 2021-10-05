@@ -27,6 +27,9 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -73,7 +76,7 @@ protected:
 
 	bool bWantsToZoom = false;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	AWeapon* CurrentWeapon;
 
 	float DefaultFOV;

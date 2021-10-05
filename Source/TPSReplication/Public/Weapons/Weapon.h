@@ -8,6 +8,20 @@
 
 class UCameraShakeBase;
 
+// Contains information of a single hitscan weapon linetrace
+USTRUCT()
+struct FHitScanTrace
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY()
+	TEnumAsByte<EPhysicalSurface> SurfaceType;
+
+	UPROPERTY()
+	FVector_NetQuantize TraceTo;
+};
+
 UCLASS()
 class TPSREPLICATION_API AWeapon : public AActor
 {
@@ -19,9 +33,16 @@ public:
 	
 	virtual void Fire();
 
+	void PlayImpactEffect(EPhysicalSurface SurfaceType, FVector ImpactPoint);
+
 	void StartFire();
 
 	void StopFire();
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerFire();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	
 
@@ -71,7 +92,14 @@ protected:
 	FTimerHandle TimerHandle_TimeBetweenShots;
 
 	float LastFiredTime;
+
+	UPROPERTY(ReplicatedUsing=OnRep_HitScanTrace)
+	FHitScanTrace HitScanTrace;
+
+	UFUNCTION()
+	void OnRep_HitScanTrace();
 	
 private:
 	void PlayFireEffects(FVector TraceEnd);
+
 };
