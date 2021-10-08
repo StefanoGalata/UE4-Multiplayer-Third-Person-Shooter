@@ -9,7 +9,7 @@ UHealthComponent::UHealthComponent()
 {
 	DefaultHealth = 100.f;
 
-	SetIsReplicated(true);
+	SetIsReplicatedByDefault(true);
 }
 
 

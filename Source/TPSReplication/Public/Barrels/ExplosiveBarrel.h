@@ -42,8 +42,11 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
 
+	UPROPERTY(ReplicatedUsing = OnRep_Exploded)
 	bool bExploded = false;
+
+	UFUNCTION()
+	void OnRep_Exploded();
 
 };
