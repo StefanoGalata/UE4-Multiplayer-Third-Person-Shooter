@@ -47,6 +47,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float MovementForce = 1000.f;
 
+	// Distance to check for nearby bots
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float NearbyBotSearchRadius = 600.f;
+
+	// Max power level when it is near other bots
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	int32 MaxPowerLevel = 4;
+
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float RequiredDistanceToTarget = 100.f;
 
@@ -74,10 +82,14 @@ protected:
 
 	void SelfDestruct();
 
+	void OnCheckNearbyBots();
+
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
 
 private:
+
+	int32 PowerLevel = 0; 
 
 	FVector NextPathPoint;
 
