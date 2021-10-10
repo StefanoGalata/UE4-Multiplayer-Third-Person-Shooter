@@ -6,7 +6,10 @@
 #include "NavigationPath.h"
 #include "NavigationSystem.h"
 #include "Components/HealthComponent.h"
-#include "Engine.h"
+#include "DrawDebugHelpers.h"
+#include "Components/SphereComponent.h"
+
+
 
 // Sets default values
 ATrackerBot::ATrackerBot()
@@ -20,6 +23,14 @@ ATrackerBot::ATrackerBot()
 	RootComponent = Mesh;
 
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
+
+	SphereComp = CreateDefaultSubobject<USphereComponent>(TEXT("Spere Component"));
+	SphereComp->SetSphereRadius(200.f);
+	SphereComp->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	SphereComp->SetCollisionResponseToAllChannels(ECR_Ignore);
+	SphereComp->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	SphereComp->SetupAttachment(Mesh);
+
 }
 
 // Called when the game starts or when spawned
@@ -31,17 +42,13 @@ void ATrackerBot::BeginPlay()
 	{
 		HealthComponent->OnHealthChanged.AddUniqueDynamic(this, &ATrackerBot::HandleTakeDamage);
 	}
-	
+
 	// Find initial move-to point
 	NextPathPoint = GetNextPathPoint();
 }
 
 void ATrackerBot::HandleTakeDamage(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
-	// @TODO pulse material on hit
-
-	// @TODO Explode on death
-
 	if(MatInst == nullptr)
 	{
 		MatInst = Mesh->CreateAndSetMaterialInstanceDynamicFromMaterial(0, Mesh->GetMaterial(0));
@@ -50,6 +57,11 @@ void ATrackerBot::HandleTakeDamage(UHealthComponent* OwningHealthComp, float Hea
 	if (MatInst)
 	{
 		MatInst->SetScalarParameterValue(MaterialParameterDamagePulseName, GetWorld()->GetTimeSeconds());
+	}
+
+	if (Health <= 0.f)
+	{
+		SelfDestruct();
 	}
 }
 
@@ -70,6 +82,55 @@ FVector ATrackerBot::GetNextPathPoint()
 	return GetActorLocation();
 }
 
+void ATrackerBot::SelfDestruct()
+{
+	if (bExploded)
+	{
+		return;
+	}
+
+	bExploded = true;
+
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplosionEffect, GetActorLocation());
+
+	TArray<AActor*> IgnoredActors;
+	IgnoredActors.Add(this);
+
+	UGameplayStatics::ApplyRadialDamage(this, ExplosionDamage, GetActorLocation(), ExplosionRadius, nullptr, IgnoredActors, this, GetInstigatorController(), true);
+	
+	DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12, FColor::Red, false, 5.f, 0, 3.f);
+
+	UGameplayStatics::PlaySoundAtLocation(this, ExplodeSFX, GetActorLocation());
+
+	Destroy();
+}
+
+
+void ATrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
+{
+	if (bStartedSelfDestruction)
+	{
+		return;
+	}
+	APawn* OverlappedPawn = Cast<APawn>(OtherActor);
+	if (OverlappedPawn->IsPlayerControlled())
+	{
+		// Overlapped a player
+
+		// Start self destruction sequence
+		GetWorldTimerManager().SetTimer(TimerHandle_SelfDamage, this,&ATrackerBot::DamageSelf, SelfDamageInterval, true);
+
+		bStartedSelfDestruction = true;
+
+		UGameplayStatics::SpawnSoundAttached(SelfDestructSFX, RootComponent);
+	}
+}
+
+void ATrackerBot::DamageSelf()
+{
+	UGameplayStatics::ApplyDamage(this, 20.f, GetInstigatorController(), this, nullptr);
+}
+
 // Called every frame
 void ATrackerBot::Tick(float DeltaTime)
 {
@@ -80,7 +141,6 @@ void ATrackerBot::Tick(float DeltaTime)
 	if (DistanceToTarget <= RequiredDistanceToTarget)
 	{
 		NextPathPoint = GetNextPathPoint();
-		DrawDebugSphere(GetWorld(), NextPathPoint, 20.f, 12, FColor::Blue, false, 6.f, 0, 5.f);
 	}
 	else
 	{

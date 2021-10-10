@@ -7,6 +7,7 @@
 #include "TrackerBot.generated.h"
 
 class UHealthComponent;
+class USphereComponent;
 
 UCLASS()
 class TPSREPLICATION_API ATrackerBot : public APawn
@@ -29,6 +30,21 @@ protected:
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	UParticleSystem* ExplosionEffect;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	USphereComponent* SphereComp;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float ExplosionDamage = 40.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float SelfDamageInterval = .25f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	float ExplosionRadius = 200.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float MovementForce = 1000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
@@ -36,6 +52,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	bool bUseVelocityChange = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	USoundBase* SelfDestructSFX;
+
+	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
+	USoundBase* ExplodeSFX;
 
 	UFUNCTION()
 	void HandleTakeDamage(UHealthComponent* OwningHealthComp, float Health, float HealthDelta, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
@@ -50,7 +72,20 @@ protected:
 
 	FName MaterialParameterDamagePulseName = "LastTimeDamageTaken";
 
+	void SelfDestruct();
+
+	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
+
+
 private:
 
 	FVector NextPathPoint;
+
+	bool bExploded = false;
+
+	bool bStartedSelfDestruction = false;
+
+	FTimerHandle TimerHandle_SelfDamage;
+
+	void DamageSelf();
 };
