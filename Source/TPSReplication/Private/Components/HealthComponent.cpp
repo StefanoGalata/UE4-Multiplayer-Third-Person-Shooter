@@ -13,6 +13,18 @@ UHealthComponent::UHealthComponent()
 }
 
 
+void UHealthComponent::Heal(float Amount)
+{
+	if (Amount <= 0 || CurrentHealth <= 0.f)
+	{
+		return;
+	}
+	CurrentHealth = FMath::Clamp(CurrentHealth+Amount, 0.f, DefaultHealth);
+
+	UE_LOG(LogTemp, Log, TEXT("Health changed: %s (+%s)"), *FString::SanitizeFloat(CurrentHealth), *FString::SanitizeFloat(Amount));
+	OnHealthChanged.Broadcast(this, CurrentHealth, -Amount, nullptr, nullptr, nullptr);
+}
+
 // Called when the game starts
 void UHealthComponent::BeginPlay()
 {

@@ -30,7 +30,7 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UDecalComponent* DecalComp;  
 
-	UPROPERTY(EditAnywhere, Category = "Pickup")
+	UPROPERTY(EditInstanceOnly, Category = "Pickup")
 	TSubclassOf<APowerUp> PowerUpClass;
 
 	UPROPERTY(EditAnywhere, Category = "Pickup")
