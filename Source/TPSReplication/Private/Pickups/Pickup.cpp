@@ -4,6 +4,7 @@
 #include "Pickups/Pickup.h"
 #include "Components/SphereComponent.h"
 #include "Components/DecalComponent.h"
+#include "PowerUps/PowerUp.h"
 
 // Sets default values
 APickup::APickup()
@@ -24,7 +25,21 @@ APickup::APickup()
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	Respawn();
+}
+
+void APickup::Respawn()
+{
+	if (PowerUpClass == nullptr)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("No power up class in %s. Upadte your BP"), *GetName());
+		return;
+	}
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	PowerUpInstance = GetWorld()->SpawnActor<APowerUp>(PowerUpClass, GetTransform(), SpawnParams);
 }
 
 void APickup::NotifyActorBeginOverlap(AActor* OtherActor)
@@ -32,6 +47,14 @@ void APickup::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	// Grant a power up
+	if (PowerUpInstance)
+	{
+		PowerUpInstance->ActivatePowerUp();
+		PowerUpInstance = nullptr;
+
+		// set timer to respawn powerup
+		GetWorldTimerManager().SetTimer(TimerHandle_RespawnTime, this, &APickup::Respawn, CooldownDuration);
+	}
 }
 
 

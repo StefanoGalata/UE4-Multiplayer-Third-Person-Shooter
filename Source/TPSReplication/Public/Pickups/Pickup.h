@@ -7,6 +7,7 @@
 #include "Pickup.generated.h"
 
 class USphereComponent;
+class APowerUp;
 
 UCLASS()
 class TPSREPLICATION_API APickup : public AActor
@@ -28,6 +29,20 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, Category = "Components")
 	UDecalComponent* DecalComp;  
+
+	UPROPERTY(EditAnywhere, Category = "Pickup")
+	TSubclassOf<APowerUp> PowerUpClass;
+
+	UPROPERTY(EditAnywhere, Category = "Pickup")
+	float CooldownDuration;
+
+private:
+
+	APowerUp* PowerUpInstance;
+
+	FTimerHandle TimerHandle_RespawnTime;
+
+	void Respawn();
 
 
 };

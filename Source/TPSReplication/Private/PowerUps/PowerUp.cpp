@@ -15,9 +15,11 @@ APowerUp::APowerUp()
 
 void APowerUp::ActivatePowerUp()
 {
+	OnActivated();
+
 	if (PowerUpInterval > 0)
 	{
-		GetWorldTimerManager().SetTimer(TimerHandle_PowerUpTick, this, &APowerUp::OnTickPowerup, PowerUpInterval, true, 0.f);
+		GetWorldTimerManager().SetTimer(TimerHandle_PowerUpTick, this, &APowerUp::OnTickPowerup, PowerUpInterval, true);
 
 	}
 	else
