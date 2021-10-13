@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "TPSGameMode.generated.h"
 
+enum class EWaveState : uint8;
+
 /**
  * The game mode only exists on the Server
  */
@@ -44,6 +46,12 @@ protected:
 	void PrepareForNextWave();
 
 	void CheckWaveState();
+
+	void CheckAnyPlayerAlive();
+
+	void GameOver();
+
+	void SetWaveState(EWaveState NewWaveState);
 
 
 	FTimerHandle TimerHandle_BotSpawner;

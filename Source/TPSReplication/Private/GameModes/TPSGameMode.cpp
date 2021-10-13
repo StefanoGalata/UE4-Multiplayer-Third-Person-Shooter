@@ -3,12 +3,15 @@
 
 #include "GameModes/TPSGameMode.h"
 #include "TimerManager.h"
+#include "GameStates/TPSGameState.h"
 #include "Components/HealthComponent.h"
 
 ATPSGameMode::ATPSGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.f;
+
+	GameStateClass = ATPSGameState::StaticClass();
 }
 
 void ATPSGameMode::StartPlay()
@@ -22,6 +25,7 @@ void ATPSGameMode::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	CheckWaveState();
+	CheckAnyPlayerAlive();
 }
 
 void ATPSGameMode::StartWave()
@@ -74,6 +78,45 @@ void ATPSGameMode::CheckWaveState()
 	if (!bIsAnyBotAlive)
 	{
 		PrepareForNextWave();
+	}
+}
+
+void ATPSGameMode::CheckAnyPlayerAlive()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+
+		if (PC && PC->GetPawn())
+		{
+			APawn* MyPawn = PC->GetPawn();
+			UHealthComponent* HealthComp = Cast<UHealthComponent>(MyPawn->GetComponentByClass(UHealthComponent::StaticClass()));
+			if (ensure(HealthComp) && HealthComp->GetCurrentHealth() > 0.f)
+			{
+				return;
+			}
+		}
+	}
+
+	// No player alive
+	GameOver();
+}
+
+void ATPSGameMode::GameOver()
+{
+	EndWave();
+
+	// @TODO: FInish the match
+
+	UE_LOG(LogTemp, Log, TEXT("Game Over, Players Died"));
+}
+
+void ATPSGameMode::SetWaveState(EWaveState NewWaveState)
+{
+	ATPSGameState* GS = GetGameState<ATPSGameState>();
+	if (ensureAlways(GS))
+	{
+		GS->WaveState = NewWaveState;
 	}
 }
 
