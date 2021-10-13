@@ -13,5 +13,43 @@ UCLASS()
 class TPSREPLICATION_API ATPSGameMode : public AGameModeBase
 {
 	GENERATED_BODY()
+
+public:
+	void StartPlay() override;
+
+
+	void Tick(float DeltaSeconds) override;
+
+protected:
+
+	ATPSGameMode();
+
+	UPROPERTY(EditDefaultsOnly, Category = "GameMode")
+	float TimeBetweenWaves = 3.f;
+
+	int32 NumberOfBotsToSpawn = 0;
+
+	int32 WaveCount = 0;
 	
+	UFUNCTION(BlueprintImplementableEvent, Category = "GameMode")
+	void SpawnNewBot();
+
+	void SpawnBotTimerElapsed();
+	
+	void StartWave();
+
+	void EndWave();
+
+	// Set timer for next wave
+	void PrepareForNextWave();
+
+	void CheckWaveState();
+
+
+	FTimerHandle TimerHandle_BotSpawner;
+	FTimerHandle TimerHandle_NextWaveStart;
+
+private:
+	bool bIsAnyBotAlive = false;
+
 };

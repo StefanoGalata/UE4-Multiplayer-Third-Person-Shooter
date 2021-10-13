@@ -25,6 +25,11 @@ void UHealthComponent::Heal(float Amount)
 	OnHealthChanged.Broadcast(this, CurrentHealth, -Amount, nullptr, nullptr, nullptr);
 }
 
+float UHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+
 // Called when the game starts
 void UHealthComponent::BeginPlay()
 {
