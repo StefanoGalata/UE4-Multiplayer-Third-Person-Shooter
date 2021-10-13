@@ -19,13 +19,19 @@ APickup::APickup()
 	DecalComp->SetupAttachment(SphereComp);
 	DecalComp->DecalSize = FVector(64, 75, 75);
 	DecalComp->SetRelativeRotation(FRotator(90.f, 0.f, 0.f));
+
+	SetReplicates(true);
 }
 
 // Called when the game starts or when spawned
 void APickup::BeginPlay()
 {
 	Super::BeginPlay();
-	Respawn();
+
+	if (HasAuthority())
+	{
+		Respawn();
+	}
 }
 
 void APickup::Respawn()
@@ -47,9 +53,9 @@ void APickup::NotifyActorBeginOverlap(AActor* OtherActor)
 	Super::NotifyActorBeginOverlap(OtherActor);
 
 	// Grant a power up
-	if (PowerUpInstance)
+	if (HasAuthority() && PowerUpInstance)
 	{
-		PowerUpInstance->ActivatePowerUp();
+		PowerUpInstance->ActivatePowerUp(OtherActor);
 		PowerUpInstance = nullptr;
 
 		// set timer to respawn powerup

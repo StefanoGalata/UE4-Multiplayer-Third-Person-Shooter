@@ -2,6 +2,7 @@
 
 
 #include "PowerUps/PowerUp.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 APowerUp::APowerUp()
@@ -11,11 +12,16 @@ APowerUp::APowerUp()
 
 	PowerUpInterval = 0.f;
 	TotalNumberOfTicks = 0;
+	bReplicates = true;
 }
 
-void APowerUp::ActivatePowerUp()
+void APowerUp::ActivatePowerUp(AActor* ActiveFor)
 {
-	OnActivated();
+
+	OnActivated(ActiveFor);
+
+	bIsPowerUpActive = true;
+	OnRep_PowerUpActive();
 
 	if (PowerUpInterval > 0)
 	{
@@ -28,10 +34,9 @@ void APowerUp::ActivatePowerUp()
 	}
 }
 
-// Called when the game starts or when spawned
-void APowerUp::BeginPlay()
+void APowerUp::OnRep_PowerUpActive()
 {
-	Super::BeginPlay();
+	OnPowerUpStateChanged(bIsPowerUpActive);
 }
 
 void APowerUp::OnTickPowerup()
@@ -42,10 +47,22 @@ void APowerUp::OnTickPowerup()
 
 	if (TicksProcessed >= TotalNumberOfTicks)
 	{
+
+		bIsPowerUpActive = false;
+		OnRep_PowerUpActive();
+
 		OnExpired();
 
 		// Delete timer
 		GetWorldTimerManager().ClearTimer(TimerHandle_PowerUpTick);
 	}
 }
+
+void APowerUp::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APowerUp, bIsPowerUpActive)
+}
+
 

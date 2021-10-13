@@ -33,8 +33,8 @@ protected:
 	UPROPERTY(EditInstanceOnly, Category = "Pickup")
 	TSubclassOf<APowerUp> PowerUpClass;
 
-	UPROPERTY(EditAnywhere, Category = "Pickup")
-	float CooldownDuration;
+	UPROPERTY(EditInstanceOnly, Category = "Pickup")
+	float CooldownDuration = 10.f;
 
 private:
 
