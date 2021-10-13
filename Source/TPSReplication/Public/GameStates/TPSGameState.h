@@ -30,10 +30,12 @@ class TPSREPLICATION_API ATPSGameState : public AGameStateBase
 	
 public:
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_WaveState, Category="GameState")
-	EWaveState WaveState;
+	void SetWaveState(EWaveState NewWaveState);
 
 protected:
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_WaveState, Category = "GameState")
+	EWaveState WaveState;
 
 	UFUNCTION(BlueprintImplementableEvent, Category = "GameState")
 	void WaveStateChanged(EWaveState NewState, EWaveState OldState);

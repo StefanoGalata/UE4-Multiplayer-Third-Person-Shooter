@@ -2,6 +2,7 @@
 
 
 #include "Components/HealthComponent.h"
+#include "GameModes/TPSGameMode.h"
 #include <Runtime/Engine/Public/Net/UnrealNetwork.h>
 
 // Sets default values for this component's properties
@@ -57,14 +58,27 @@ void UHealthComponent::OnRep_CurrentHealth(float OldHealth)
 
 void UHealthComponent::HandleTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
-	if(Damage <= 0.f)
+	if(Damage <= 0.f || bIsDead)
 	{
 		return;
 	}
 
 	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.f, DefaultHealth);
 
+	bIsDead = CurrentHealth <= 0.f;
+
 	OnHealthChanged.Broadcast(this, CurrentHealth, Damage, DamageType, InstigatedBy, DamageCauser);
+
+	if (CurrentHealth <= 0)
+	{
+		ATPSGameMode* GM = Cast<ATPSGameMode>(GetWorld()->GetAuthGameMode());
+
+		if (GM)
+		{
+			GM->OnActorKilled.Broadcast(GetOwner(), DamageCauser, InstigatedBy);
+		}
+	}
+	
 }
 
 void UHealthComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

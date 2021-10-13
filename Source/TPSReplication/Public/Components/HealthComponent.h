@@ -40,4 +40,7 @@ protected:
 
 	UFUNCTION()
 	void HandleTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser);
+
+private:
+	bool bIsDead = false;
 };

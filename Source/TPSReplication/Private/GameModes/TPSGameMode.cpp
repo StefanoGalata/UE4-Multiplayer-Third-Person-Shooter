@@ -5,12 +5,15 @@
 #include "TimerManager.h"
 #include "GameStates/TPSGameState.h"
 #include "Components/HealthComponent.h"
+#include "EngineUtils.h"
+#include "PlayerStates/TPSPlayerState.h"
 
 ATPSGameMode::ATPSGameMode()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.TickInterval = 1.f;
 
+	PlayerStateClass = ATPSPlayerState::StaticClass();
 	GameStateClass = ATPSGameState::StaticClass();
 }
 
@@ -35,19 +38,20 @@ void ATPSGameMode::StartWave()
 	NumberOfBotsToSpawn = 2 * WaveCount;
 
 	GetWorldTimerManager().SetTimer(TimerHandle_BotSpawner, this, &ATPSGameMode::SpawnBotTimerElapsed, 1.f, true);
+
+	SetWaveState(EWaveState::WaveInProgress);
 }
 
 void ATPSGameMode::EndWave()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_BotSpawner);
-
-	PrepareForNextWave();
+	SetWaveState(EWaveState::WaitingToComplete);
 }
 
 void ATPSGameMode::PrepareForNextWave()
 {
-	
 	GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &ATPSGameMode::StartWave, TimeBetweenWaves, false);
+	SetWaveState(EWaveState::WaitingToStart);
 }
 
 void ATPSGameMode::CheckWaveState()
@@ -59,9 +63,9 @@ void ATPSGameMode::CheckWaveState()
 		return;
 	}
 
-	for (FConstPawnIterator It = GetWorld()->GetPawnIterator(); It; ++It)
+	for (TActorIterator<APawn> It(GetWorld(), APawn::StaticClass()); It; ++It)
 	{
-		APawn* TestPawn = It->Get();
+		APawn* TestPawn = *It;
 		if (TestPawn == nullptr || TestPawn->IsPlayerControlled())
 		{
 			continue;
@@ -73,10 +77,12 @@ void ATPSGameMode::CheckWaveState()
 			bIsAnyBotAlive = true;
 			break;
 		}
+		bIsAnyBotAlive = false;
 	}
 
 	if (!bIsAnyBotAlive)
 	{
+		SetWaveState(EWaveState::WaveComplete);
 		PrepareForNextWave();
 	}
 }
@@ -108,6 +114,8 @@ void ATPSGameMode::GameOver()
 
 	// @TODO: FInish the match
 
+	SetWaveState(EWaveState::GameOver);
+
 	UE_LOG(LogTemp, Log, TEXT("Game Over, Players Died"));
 }
 
@@ -116,7 +124,7 @@ void ATPSGameMode::SetWaveState(EWaveState NewWaveState)
 	ATPSGameState* GS = GetGameState<ATPSGameState>();
 	if (ensureAlways(GS))
 	{
-		GS->WaveState = NewWaveState;
+		GS->SetWaveState(NewWaveState);
 	}
 }
 
