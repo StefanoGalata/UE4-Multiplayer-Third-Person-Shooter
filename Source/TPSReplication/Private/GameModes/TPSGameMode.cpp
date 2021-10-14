@@ -42,6 +42,19 @@ void ATPSGameMode::StartWave()
 	SetWaveState(EWaveState::WaveInProgress);
 }
 
+void ATPSGameMode::RestartDeadPlayers()
+{
+	for (FConstPlayerControllerIterator It = GetWorld()->GetPlayerControllerIterator(); It; ++It)
+	{
+		APlayerController* PC = It->Get();
+
+		if (PC && PC->GetPawn() == nullptr)
+		{
+			RestartPlayer(PC);
+		}
+	}
+}
+
 void ATPSGameMode::EndWave()
 {
 	GetWorldTimerManager().ClearTimer(TimerHandle_BotSpawner);
@@ -52,6 +65,8 @@ void ATPSGameMode::PrepareForNextWave()
 {
 	GetWorldTimerManager().SetTimer(TimerHandle_NextWaveStart, this, &ATPSGameMode::StartWave, TimeBetweenWaves, false);
 	SetWaveState(EWaveState::WaitingToStart);
+
+	RestartDeadPlayers();
 }
 
 void ATPSGameMode::CheckWaveState()
