@@ -36,7 +36,6 @@ public:
 	void PlayImpactEffect(EPhysicalSurface SurfaceType, FVector ImpactPoint);
 
 	void StartFire();
-
 	void StopFire();
 
 	UFUNCTION(Server, Reliable, WithValidation)
@@ -80,11 +79,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float BaseDamage = 20.f;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+	float ShootTraceLength = 10000.f;
+
 	/**
 	 * Bullets per minute fired
 	 */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
 	float RateOfFire;
+
+	// Bullet spread in degrees
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon", meta=(ClampMin=0.f))
+	float BulletSpread = 2.f;
 
 	// Derived from rate of fire
 	float TimeBetweenShots;

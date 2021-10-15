@@ -31,6 +31,26 @@ float UHealthComponent::GetCurrentHealth() const
 	return CurrentHealth;
 }
 
+bool UHealthComponent::IsFriendly(AActor* ActorA, AActor* ActorB)
+{
+	if (ActorA == nullptr || ActorB == nullptr)
+	{
+		// Assume friendly
+		return true;
+	}
+	
+	UHealthComponent* HealthCompA = Cast<UHealthComponent>(ActorA->GetComponentByClass(UHealthComponent::StaticClass()));
+	UHealthComponent* HealthCompB = Cast<UHealthComponent>(ActorB->GetComponentByClass(UHealthComponent::StaticClass()));
+
+	if (HealthCompA == nullptr || HealthCompB == nullptr)
+	{
+		// Assume friendly
+		return true;
+	}
+
+	return HealthCompA->TeamNum == HealthCompB->TeamNum;
+}
+
 // Called when the game starts
 void UHealthComponent::BeginPlay()
 {
@@ -59,6 +79,11 @@ void UHealthComponent::OnRep_CurrentHealth(float OldHealth)
 void UHealthComponent::HandleTakeDamage(AActor* DamagedActor, float Damage, const class UDamageType* DamageType, class AController* InstigatedBy, AActor* DamageCauser)
 {
 	if(Damage <= 0.f || bIsDead)
+	{
+		return;
+	}
+
+	if (DamageCauser != DamagedActor && IsFriendly(DamagedActor, DamageCauser))
 	{
 		return;
 	}

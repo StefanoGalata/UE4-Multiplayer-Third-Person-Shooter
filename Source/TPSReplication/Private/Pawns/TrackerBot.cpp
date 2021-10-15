@@ -8,6 +8,7 @@
 #include "Components/HealthComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Components/SphereComponent.h"
+#include "EngineUtils.h"
 
 
 
@@ -76,15 +77,42 @@ void ATrackerBot::HandleTakeDamage(UHealthComponent* OwningHealthComp, float Hea
 
 FVector ATrackerBot::GetNextPathPoint()
 {
+	APawn* BestTarget = nullptr;
+	float NearestTargetDistance = FLT_MAX;
+
 	// @TODO Find the actual target
-	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(this, 0);
-
-	UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), PlayerPawn);
-
-	if (NavPath && NavPath->PathPoints.Num() > 1)
+	for (TActorIterator<APawn> It(GetWorld(), APawn::StaticClass()); It; ++It)
 	{
-		// return the next point in the path
-		return NavPath->PathPoints[1];
+		APawn* TestPawn = *It;
+		if (TestPawn == nullptr || UHealthComponent::IsFriendly(TestPawn, this))
+		{
+			continue;
+		}
+
+		UHealthComponent* TestPawnHealthComp = Cast<UHealthComponent>(TestPawn->GetComponentByClass(UHealthComponent::StaticClass()));
+		if (TestPawnHealthComp && TestPawnHealthComp->GetCurrentHealth() > 0.f)
+		{	
+			float Distance = (TestPawn->GetActorLocation() - GetActorLocation()).Size();
+			if (Distance < NearestTargetDistance)
+			{
+				BestTarget = TestPawn;
+				NearestTargetDistance = Distance;
+			}
+		}
+	}
+
+	if (BestTarget != nullptr)
+	{
+		UNavigationPath* NavPath = UNavigationSystemV1::FindPathToActorSynchronously(this, GetActorLocation(), BestTarget);
+
+		GetWorldTimerManager().ClearTimer(TimerHanlde_RefreshPath);
+		GetWorldTimerManager().SetTimer(TimerHanlde_RefreshPath, this, &ATrackerBot::RefreshPath, 5.f, false);
+
+		if (NavPath && NavPath->PathPoints.Num() > 1)
+		{
+			// return the next point in the path
+			return NavPath->PathPoints[1];
+		}
 	}
 
 	// Failed to find  path
@@ -118,7 +146,7 @@ void ATrackerBot::SelfDestruct()
 
 		UGameplayStatics::ApplyRadialDamage(this, ActualDamage, GetActorLocation(), ExplosionRadius, nullptr, IgnoredActors, this, GetInstigatorController(), true);
 
-		DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12, FColor::Red, false, 5.f, 0, 3.f);
+		//DrawDebugSphere(GetWorld(), GetActorLocation(), ExplosionRadius, 12, FColor::Red, false, 5.f, 0, 3.f);
 
 		SetLifeSpan(2.0f);
 	}
@@ -169,7 +197,7 @@ void ATrackerBot::OnCheckNearbyBots()
 	}
 
 	// Draw power level 
-	DrawDebugString(GetWorld(), FVector::ZeroVector, FString::FromInt(PowerLevel), this, FColor::White, 1.f, true);
+	//DrawDebugString(GetWorld(), FVector::ZeroVector, FString::FromInt(PowerLevel), this, FColor::White, 1.f, true);
 }
 
 
@@ -182,7 +210,7 @@ void ATrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 		return;
 	}
 	APawn* OverlappedPawn = Cast<APawn>(OtherActor);
-	if (OverlappedPawn && OverlappedPawn->IsPlayerControlled())
+	if (OverlappedPawn && !UHealthComponent::IsFriendly(OtherActor, this))
 	{
 		// Overlapped a player
 
@@ -196,6 +224,11 @@ void ATrackerBot::NotifyActorBeginOverlap(AActor* OtherActor)
 
 		UGameplayStatics::SpawnSoundAttached(SelfDestructSFX, RootComponent);
 	}
+}
+
+void ATrackerBot::RefreshPath()
+{
+	NextPathPoint = GetNextPathPoint();
 }
 
 void ATrackerBot::DamageSelf()

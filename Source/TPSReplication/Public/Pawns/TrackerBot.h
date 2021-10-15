@@ -36,13 +36,13 @@ protected:
 	USphereComponent* SphereComp;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
-	float ExplosionDamage = 40.f;
+	float ExplosionDamage = 60.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float SelfDamageInterval = .25f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
-	float ExplosionRadius = 200.f;
+	float ExplosionRadius = 350.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "TrackerBot")
 	float MovementForce = 1000.f;
@@ -86,6 +86,8 @@ protected:
 
 	virtual void NotifyActorBeginOverlap(AActor* OtherActor) override;
 
+	void RefreshPath();
+
 
 private:
 
@@ -98,6 +100,8 @@ private:
 	bool bStartedSelfDestruction = false;
 
 	FTimerHandle TimerHandle_SelfDamage;
+
+	FTimerHandle TimerHanlde_RefreshPath;
 
 	void DamageSelf();
 };

@@ -17,6 +17,9 @@ public:
 	// Sets default values for this component's properties
 	UHealthComponent();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "HealthCompoent")
+	uint8 TeamNum = 255;
+
 	UPROPERTY(BlueprintAssignable, Category = "Events")
 	FOnHealthChangedSignature OnHealthChanged;
 
@@ -24,6 +27,9 @@ public:
 	void Heal(float Amount);
 
 	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HealthComponent")
+	static bool IsFriendly(AActor* ActorA, AActor* ActorB);
 
 protected:
 	// Called when the game starts

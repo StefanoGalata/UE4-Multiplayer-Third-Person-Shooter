@@ -30,6 +30,12 @@ public:
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION(BlueprintCallable, Category = "TPSCharacter")
+	void StartFire();
+
+	UFUNCTION(BlueprintCallable, Category = "TPSCharacter")
+	void StopFire();
+
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -64,9 +70,6 @@ protected:
 
 	void BeginZoom();
 	void EndZoom();
-
-	void StartFire();
-	void StopFire();
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
